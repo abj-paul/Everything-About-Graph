@@ -1,0 +1,437 @@
+#+SEQ_TODO: VERY_HARD(v) LATER(l) IMPORTANT(i) | UDERSTOOD(u)
+
+* DSA Codechef Full Course
+[[https://www.codechef.com/certification/data-structures-and-algorithms/prepare][Source.]]
+[[https://www.programiz.com/dsa][Blog.]]
+* Graph Course from geeks for geeks
+[[https://www.geeksforgeeks.org/graph-representations-using-set-hash/][Source.]]
+** UDERSTOOD Implementing Graphs Using Sets
+1) Set: stores the elements in a sorted way and duplicate elements are not allowed. Sets are implemented using binary search tree so finding/searching an edge in a set takes ~O(logV)~ time.
+So we can't use this approach for parallel edges.
+#+begin_src c++ :tangle codes/set-represetation-of-graph.c
+#include<bits/stdc++.h>
+using namespace std;
+
+struct Graph{
+  int V;
+  set<int, greater<int>>* adjacency_list;
+};
+
+Graph* create_graph(int V){
+    struct Graph* graph = new Graph;
+    graph->V = V;
+    graph->adjacency_list = new set<int, greater<int>>[V];
+return graph;
+}
+
+Graph* add_edge(Graph* graph, int src, int dest){
+  graph->adjacency_list[src].insert(dest);
+  graph->adjacency_list[dest].insert(src);
+}
+
+void print_graph(Graph* graph){
+  for(int i=0; i<graph->V; i++){
+    set<int, greater<int>>lst = graph->adjacency_list[i];
+    printf("Adjacency list for vertex %d: \n",i);
+    for(auto itr=lst.begin(); itr!=lst.end(); itr++){
+      printf("%d ",*itr);
+    }
+    printf("\n");
+  }
+}
+
+void search_edge(Graph* graph, int src, int dest){
+  auto itr = graph->adjacency_list[src].find(dest);
+  if(itr==graph->adjacency_list[src].end()){
+    printf("There is no edge between %d and %d vertex.\n",src,dest);
+    return;
+  }
+  printf("There is a edge between %d and %d.\n",src,dest);
+  return;
+}
+
+int main(){
+  int V=5;
+  struct Graph* graph = create_graph(V);
+  add_edge(graph, 0, 1);
+  add_edge(graph, 0, 4);
+  add_edge(graph, 1, 2);
+  add_edge(graph, 1, 3);
+  add_edge(graph, 1, 4);
+  add_edge(graph, 2, 3);
+  add_edge(graph, 3, 4);
+  
+  print_graph(graph);
+  search_edge(graph, 2, 1);
+  search_edge(graph, 0, 3);
+return 0;
+}
+#+end_src
+** UDERSTOOD Implemeting unordered_set to further increase search time
+In set, balanced search tree is used and it takes O(logV) for insert, delete or search. We can further increase it to O(1)/constant time using unordered_set.
+    - unordered_set uses hash table.
+    - insert delete or search operation takes O(1) time
+    - Its unordered, as the name implies.
+    - it also only work for unique keys/ (the input to hash must be unique, in other words, it can't store duplicate elements like 1,1,1). To store duplicate elements, we have to use unordered_multiset.
+    - unordered_set is specially handy to store strings.
+*** Example of using unordered_set for string
+- c_str() converts std::string to char* for printf().
+#+begin_src c++ :tangle codes/unordered_set.cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+int main(){
+    unordered_set<string> strset;
+    strset.insert("code");
+    strset.insert("in");
+    strset.insert("c++");
+    strset.insert("is");
+    strset.insert("fast");
+    
+    string key = "slow";
+    if(strset.find(key)==strset.end()) printf("%s is not in the set.\n",key.c_str());
+    else printf("Found!\n");
+
+    unordered_set<string>::iterator itr;
+    for(itr = strset.begin(); itr!=strset.end(); itr++) printf("%s\n",(*itr).c_str());
+return 0;
+}
+#+end_src
+*** Graph and unordered_set
+#+begin_src c++ :tangle codes/unordered-set-graph.cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+struct Graph{
+    int V;
+    unordered_set<int>* adjList;
+};
+
+Graph* createGraph(int V){
+    Graph* graph = new Graph;
+    graph->V=V;
+    graph->adjList = new unordered_set<int>[V];
+}
+
+void addEdge(graph, Graph* graph, int src, int dest){
+    graph->adjList[src].insert(dest);
+    graph->adjList[dest].insert(src);
+}
+
+void searchEdge(Graph* graph, int src, int dest){
+    unordered_set<int>::iterator itr;
+    itr = graph->adjList[src].find(dest);
+    if(itr==graph->adjList[src].end()){
+        printf("There is no edge between %d ad %d vertex.\n",src,dest);
+        return;
+    }
+    else{
+        printf("There is an edge between %d ad %d vertex.\n",src,dest);
+        return;
+    }
+}
+
+void printGraph(Graph* graph){
+    for(int i=0; i<graph->V; i++){
+        printf("The adjacency list for %d vertex is:\n",i);
+        auto lst = graph->adjList[i];
+        for(auto itr=lst.begin(); itr!=lst.end(); itr++) printf("%d ",*itr);
+        printf("\n");
+    }
+}
+
+int main(){
+    int V=5;
+    Graph* graph = createGraph(V);
+    addEdge(graph, graph, 0, 1);
+    addEdge(graph, graph, 0, 4);
+    addEdge(graph, graph, 1, 2);
+    addEdge(graph, graph, 1, 3);
+    addEdge(graph, graph, 1, 4);
+    addEdge(graph, graph, 2, 3);
+    addEdge(graph, graph, 3, 4);
+    
+    printGraph(graph);
+    searchEdge(graph, 4, 3);
+    searchEdge(graph, 4, 2);
+return 0;
+}
+#+end_src
+** UDERSTOOD Find a mother vertex in a graph
+Mother vertex is just like a root. A vertex from which there is a path to every other vertex.
+1) In a disconnected graph, we can't reach some vertices. So there can be no mother vertex.
+2) In an undirected connected graph, we can reach every vertex from another vertex. So every vertices are mother vertex.
+3) In a directed connected graph, we have to find mother vertex manually. 
+
+As we can see, we should only be concerned about case 3. Also note that, there can be multiple mother vertices in a graph.
+*** Naive Approach (Find ALL Vertices)
+First, do identify the first two cases.
+1) do a dfs to see if its disconnected.
+2) if graph[i][j]==graph[j][i] for every vertices. (because there can be parallel edge in a graph).
+3) We can do dfs search on every vertex and see if every vertices are visited at the end of dfs search. (The vertices from which we can traverse every other vertices using dfs are the mother vertices.)
+
+#+begin_src c++ :tangle mother-vertex-naive-approach.cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+struct Graph{
+    int V;
+    unordered_set<int>*adjList;
+}
+
+void dfs(Graph* graph, int visited[],int vertex){ // O(V+E)
+    visited[vertex]=true;
+    for(auto x: graph->adjList[vertex]){
+        if(!visited) dfs(graph, visited, *x);
+    }
+}
+
+
+vector<int> findMotherVertices(Graph* graph){ // Complexity O(V(V+E))
+    vector<int>motherVertices;
+    for(int i=0; i<graph->V; i++){
+        vector<bool>visited(graph->V, false);
+        dfs(graph, visited, i);
+        // Check if there are any unvisited vertex
+        bool unvisited_vertex_found=false;
+        for(int i=0; i<graph->V; i++){
+            if(!visited){
+                unvisited_vertex_found=true;
+                break;
+            }
+        }
+        if(!unvisited_vertex_found) motherVertices.push_back(i);
+    }
+    return motherVertices;
+}
+
+
+bool checkUndirected(Graph* graph){ // Complexity: O(V+E)
+    int bidirection_count=0;
+    for(int src=0; src<graph->V; src++){
+        // src->dest
+        for(auto dest: graph->adjList[src]){
+            // dest->src
+            if(graph->adjList[dest].find(src)!=graph->adjList[dest].end()) bidirection_count++;
+        }
+    }
+    if(bidirection_count==graph->V) return true;
+    else return false;
+}
+
+#+end_src
+*** Main Approach (Find Any One Mother Vertex)
+From [[https://www.geeksforgeeks.org/strongly-connected-components/][kosharazu's algorithm]], We know that the nodes with the highest finishing time, are the roots of a subtree. And mother vertices are roots as well. so we can say, if the graph has one or more mother vertices, then the highest finishing time vertex must be the mother vertex. So we do this - 
+1)generate finishing time array/stack from dfs
+2) pick the highest-finishing-time vertex and run dfs for it to see if all vertices can be visited from it.
+
+#+begin_src c++
+void dfs(Graph* graph, vector<bool>&visited, int vertex){
+    visited[vertex]=true;
+    for(auto x: graph->adjList[vertex]){
+         if(!visited[x]) dfs(graph, visited, x);
+    }
+}
+
+int get_mother_vertex(Graph* graph){
+    vector<bool>visited(graph->V, false);
+    int vertex_with_highest_finishing_time = 0;
+    for(int i=0; i<graph->V; i++){
+      if(!visited[i]){
+        dfs(graph, visited, i);
+//printf("Running dfs on=%d\n",i);
+        vertex_with_highest_finishing_time=i; 
+      }
+    }
+//printf("HFTV:%d\n",vertex_with_highest_finishing_time);
+    fill(visited.begin(), visited.end(), false);
+    dfs(graph, visited, vertex_with_highest_finishing_time);
+    for(int i=0; i<graph->V; i++) if(!visited[i]) return -1;
+    return vertex_with_highest_finishing_time;
+}
+
+#+end_src
+** VERY_HARD Find K-cores of a undirected graph
+k-core means a connected graph with deg(each node)>=k.
+#+begin_src c++
+struct Degree{
+    int vertex;
+    int degree;
+
+    bool operator<(const Degree& t) const
+    {
+        return (this->degree < t.degree);
+    }
+}
+
+void find_core_matrix(graph* given_graph, int k){
+    
+}
+
+#+end_src
+** Count number of nodes at a given level using bfs
+   Its simple bfs. but before going to the code, we need to know what is list datatype in c++ stl
+*** List Datatype
+list implements doubly-linked list in the background. So we can insert or delete items from anywhere easily. Its just like python lists.
+-- Use list when insertion. moving or extraction becomes a concern.
+*** code
+#+begin_src c++ :tangle codes/test.cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+class Graph{
+    int V;
+    list<int>* adjList;
+public:
+    Graph(int V);
+    void addEdge(int src, int dest);
+    vector<int> BFS(int source);
+};
+
+Graph::Graph(int V){
+  this->V = V;
+  this->adjList = new list<int>[V];
+}
+
+void Graph::addEdge(int src, int dest){
+  adjList[src].push_back(dest);
+  adjList[dest].push_back(src);
+}
+
+vector<int> Graph::BFS(int src){
+  vector<bool>visited(V, false);
+  vector<int> level(V,0);
+  
+  list<int>queue;
+  visited[src]=true;
+  queue.push_back(src);
+  level[src]=0;
+
+  while(!queue.empty()){
+    src = queue.front();
+    queue.pop_front();
+    
+    for(auto i:adjList[src]){
+      if(!visited[i]){
+        level[i]=level[src]+1;
+        visited[i]=true;
+        queue.push_back(i);
+        }
+      }
+    }
+  return level;
+}
+
+int main(){
+
+  Graph g(6);
+  g.addEdge(0, 1);
+  g.addEdge(0, 2);
+  g.addEdge(1, 3);
+  g.addEdge(2, 4);
+  g.addEdge(2, 5);
+
+  vector<int> levels=g.BFS(0) ;
+  for(int i=0; i<6; i++) printf("Node:%d, at level: %d\n",i,levels[i]);
+return 0;
+}
+#+end_src
+** Test Graph 
+*** No Class Implementation
+#+begin_src c++ :tangle codes/test.cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+struct Graph{
+    int V;
+    unordered_set<int>* adjList;
+};
+
+Graph* createGraph(int V){
+    Graph* graph = new Graph;
+    graph->V=V;
+    graph->adjList = new unordered_set<int>[V];
+}
+
+void addEdge(Graph* graph, int src, int dest){
+    graph->adjList[src].insert(dest);
+    //graph->adjList[dest].insert(src);
+}
+
+void searchEdge(Graph* graph, int src, int dest){
+    unordered_set<int>::iterator itr;
+    itr = graph->adjList[src].find(dest);
+    if(itr==graph->adjList[src].end()){
+        printf("There is no edge between %d ad %d vertex.\n",src,dest);
+        return;
+    }
+    else{
+        printf("There is an edge between %d ad %d vertex.\n",src,dest);
+        return;
+    }
+}
+
+void printGraph(Graph* graph){
+    for(int i=0; i<graph->V; i++){
+        printf("The adjacency list for %d vertex is:\n",i);
+        auto lst = graph->adjList[i];
+        for(auto itr=lst.begin(); itr!=lst.end(); itr++) printf("%d ",*itr);
+        printf("\n");
+    }
+}
+
+// temporary prototypes
+
+int main(){
+    int V=7;
+    Graph* graph = createGraph(V);
+    addEdge(graph, 0, 1);
+    addEdge(graph, 0, 2);
+    addEdge(graph, 1, 3);
+    addEdge(graph, 4, 1);
+    addEdge(graph, 6, 4);
+    addEdge(graph, 5, 6);
+    addEdge(graph, 5, 2);
+    addEdge(graph, 6, 0);
+    
+    printGraph(graph);
+    //searchEdge(graph, 4, 3);
+    //searchEdge(graph, 4, 2);
+    printf("A mother vertex is: %d\n", get_mother_vertex(graph));
+    
+return 0;
+}
+
+
+
+#+end_src
+* Stack Overflow
+#+begin_src c++ :tangle codes/debug-code.c
+#include<stdio.h>
+int main()
+{
+    int a[10],i,j,temp,n;
+    printf("\n Enter the max no.of Elements to Sort: \n");
+    scanf("%d",&n);
+    printf("\n Enter the Elements : \n");
+    for(i=0; i<n; i++)
+    {
+        scanf("%d",&a[i]);
+    }
+    for(i=0; i<n; i++)
+        for(j=i+1; j<n; j++)
+        {
+            if(a[i]>a[j])
+            {
+                temp=a[i];
+                a[i]=a[j];
+                a[j]=temp;
+            }
+        }
+    for(i=0; i<n; i++)
+    {
+        printf("%d\t",a[i]);
+    }
+    return 0;
+}
+#+end_src
