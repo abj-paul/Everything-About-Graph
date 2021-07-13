@@ -1,0 +1,9 @@
+* Objective
+Follow me as I complete the [[https://www.geeksforgeeks.org/graph-data-structure-and-algorithms/][tutorial series]] of geeksforgeeks on Graph. I will commit the things I have learnt new, everyday.
+** Day 01
+   - Graph representations.
+   - unordered_set and set Data Structure
+   - List data structure
+   - class and OOP in C++
+   - Finding Mother Vertices
+   - Count number of nodes for a given level in a graph.
